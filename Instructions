@@ -1,0 +1,666 @@
+#Welcome to the Lab Developer Workshop
+
+This workshop will cover using Life Cycle Actions (LCAs) as well as using
+Activity Based Assessments (ABA’s) with the attempt to include some gamification
+within the Lab.
+
+Before starting please enter your initials here: @lab.TextBox(initials)
+
+##Contents
+[Contents](#contents)  
+[Getting started](#getting-started)  
+[Customising the first Lab Profile](#customising-the-first-lab-profile)  
+[Additional Scripting](#additional-scripting)  
+[Challenge Learning for ABA and PBT](#challenge-learning-for-aba-and-pbt)
+
+===
+
+##Scenario
+During this first section on Life Cycle Actions you will look at using them to customise a single Windows image for different applications on deployment.
+
+---
+##Getting started
+
+Create a new lab profile for this LDW from the **My Organizations** section of the Template Gallery. Use the
+template called **002 - Windows 10 VM - Multiple Apps**. The VM in this Lab Profile contains several 
+different applications, and you will use LCA’s to personalise the VM on
+deployment for different application courses.
+
+When creating the new Lab Profile use the following information:
+
+|||
+|---------------|--------------------------|
+| Number:       | 002                      |
+| Name:         | @lab.Variable(initials)-PowerPoint |
+| Organisation: | LDW-Nov21                |
+| Series:       | LDW-Nov21                |
+
+This new Lab Profile contains a multi purpose VM.  This VM has a number of applications installed including:
+
+  - Word
+  - Excel
+  - PowerPoint
+  - Frames
+
+===
+
+##Customising the first Lab Profile
+
+---
+
+The first step will be to update the Lab Profile to use LCA's for a lab on Microsoft PowerPoint.  But this will include some additional tasks as additional examples.
+
+ - [] Edit the @lab.Variable(initials)-PowerPoint Lab Profile
+ - [] Navigate to the Life Cycle page
+ - [] Click **+ Add Life cycle Action**
+ - [] Complete the Add Life Cycle Action form as follows:
+
+|||
+|---|---|
+|Name:|++Script to Update VM for MS PowerPoint++|
+|Action:|Execute Script in Virtual Machine|
+|Event:|First Displayable|
+|Machine:|Windows 10 VM - Multiple Apps|
+
+In the Script box enter the following PowerShell
+
+```PowerShell
+
+#Copy application shortcut to desktop
+ c:\LabScripts\copy-app.ps1 PowerPoint
+
+#Update desktop Bitmap to change lab title and background colour if required
+ copy-item -path c:\labscripts\PowerPoint.bgi -destination 'c:\program files\bginfo\background.bgi'
+
+```
+Save and then launch the Lab Profile and confirm the following once logged on:
+
+ - [] Desktop colour is Orange
+ - [] There is a PowerPoint icon is on the desktop
+ - [] Bitmap contains the title: **Skillable Lab Developer Workshop - PowerPoint**  *this might take a few seconds to refresh*
+ - [] PowerPoint launches
+
+ Make a note of the Computer name here: @lab.TextBox(ComputerName)
+
+ - []End the Lab @lab.Variable(initials)-PowerPoint
+
+---
+===
+
+##Additional Scripting
+
+---
+This section you will add some additional scripting options which are not technically required but will highlight more capability
+
+ - [] Edit the @lab.Variable(initials)-PowerPoint Lab Profile
+ - [] Navigate to the LifeCycle page
+ - [] Click the little pencil icon (!IMAGE[zjiq90th.jpg](zjiq90th.jpg)) to edit the **Script to Update VM for MS PowerPoint** LCA
+
+Add the following additional script to the end of the current script.  Note the comments so you know what each part of the script does.
+
+```PowerShell
+
+#This command turns off Windows Updates by setting a registry key
+$registryPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+$Name = 'NoAutoUpdate'
+$value = '1'
+IF(!(Test-Path $registryPath)) {
+      New-Item -Path $registryPath -Force
+      New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType DWORD -Force
+}
+ ELSE {
+      New-ItemProperty -Path $registryPath -Name $name -Value $value  -PropertyType DWORD -Force
+}
+
+#This Command would Rearm Ofice
+cscript 'C:\Program Files\Microsoft Office\Office16\ospp.vbs' /rearm
+
+
+#This set of commands will rename the computer to WKS-PowerPoint-*last number of the IP Address* and reboot the computer
+$ipAddress = (Get-NetIPAddress | Where-Object {$_.AddressState -eq 'Preferred' -and $_.AddressFamily -eq 'ipv4' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
+$IPAddressLO=$ipAddress.Split('.')
+$Computername = 'WKS-'
+$Computername += $IPAddressLO[3]
+rename-computer -newname $Computername -force -restart
+
+```
+
+Save and then Launch the Lab Profile and confirm the following once logged on:
+
+ - [] Desktop is Orange
+ - [] There is a PowerPoint icon is on the dekstop
+ - [] Bitmap contains the title: **Skillable Lab Developer Workshop - PowerPoint**  *this might take a few seconds to refresh*
+ - [] Check the computer name to confirm it has changed from @lab.Variable(ComputerName) to the new format (WKS-IPAddress) 
+
+ 
+---
+===
+
+@lab.Activity(Question2)
+
+===
+
+##Challenge Contents
+[Challenge Adding other Life Cycle Actions](#challenge-adding-other-life-cycle-actions)  
+[Challenge Create an Excel Lab Profile](#challenge-create-an-excel-lab-profile)
+
+##Challenge Adding other Life Cycle Actions
+
+---
+
+ - [] Edit the @lab.Variable(initials)-PowerPoint Lab Profile
+ - [] Add the following Life cycle Actions:
+    - Contact an external Webapplication to **Post** a notify of lab launch using the url: ++@lab.Variable(ExternalWebApp)/Launch?Labinstanceid=&#64;lab.LabInstance.Id&fname=&#64;lab.User.FirstName&lname=&#64;lab.User.LastName&OrgName=&#64;lab.User.Organization.Name++
+    - Notification on Post Build to inform users the lab is being customised
+    - Notification when lab is ready for the learner to use
+ 
+ You might notice the second notification appears before the VM is ready?  Change the lab to fix this issue...
+
+>[!Hint]<Details>
+      ><summary>Expand for a little hint on a possible solution.</summary>
+      >
+      > Review this web page for a clue:  [Activities](https://docs.learnondemandsystems.com/lod/activities.md)
+      >
+      ></details>
+
+> [!TIP]Investigate using the second Name field:
+>
+> !IMAGE[l7047o39.jpg](l7047o39.jpg)
+
+
+#Challenge Create another application Lab Profile
+
+Your challenge is to create another Lab Profile but this time for the one of the other Applications.
+Because this has been designed to make managing and updating Labs to be scalable the only changes to the previous instructions is where to find the word **PowerPoint** replace it with the approiate application name
+
+>[!Hint]<Details>
+      ><summary> Expand for other Applications available:</summary>
+      >
+  - Word
+  - Excel
+  - Frames
+      >
+      ></details>
+
+Once the Lab Profile is completed launch the lab and check the following:
+
+ - [] Desktop is either Green (Excel) Bluie (Word) Red (Frames)
+ - [] Bitmap contains the title: **Skillable Lab Developer Workshop - <App Name>**  *this might take a few seconds to refresh*
+ - [] Check the computer name to confirm it has changed from @lab.Variable(ComputerName) to the new format (WKS-IPAddress) 
+ - [] There is a relevant application icon is on the dekstop
+
+#Advanced Challenge
+
+##Scenario
+You want to take the PowerPoint Profile and turn it into a Template Gallery image.  You have noticed when Lab Developers have been copying the Lab Profile and then updating the script they keep breaking the script for you to fix.  Your intention is to publish the PowerPoint Lab Profile as a Template Gallery template before you can you need to modify the Lab Profile so the Lab Developers will be able to change the configured application without having to edit the Life Cycle Action script.
+
+##Task
+Update the @lab.Variable(initials)-PowerPoint Lab Profile so that the application can be configured without editing the script.
+
+
+===
+
+#Challenge Learning for ABA and PBT
+
+In this section a more challenge based approach will be used to allow you to discover an example use of ABA and PBT techologies on the LOD platform.  To continue please enter the passcode provided by the instructor.
+
+@lab.Activity(Question1)
+
+===
+
+##Getting started
+
+Create a new lab profile for this LDW from the **My Organizations** section of the Template Gallery. Use the
+template called **003 - Excel PBT**. The VM in this Lab Profile contains Excel and the PBT instructions but not the activities.
+
+When creating the new Lab Profile use the following information:
+
+|||
+|---------------|--------------------------|
+| Number:       | 003                      |
+| Name:         | @lab.Variable(initials)-ExcelPBT |
+| Organisation: | LDW-Nov21                |
+| Series:       | LDW-Nov21                |
+
+Launch the newly created Lab Profile.  When the Lab Profile is launch you will notice it contains the tasks already with place holders for the activities.  You will notice for simplicity each task is split onto its own page as so are the following instructions.
+
+Your task is to create the automated activities behind each task.  There are two levels of instruction **Guided and Advanced**  The guided tells you the command to use and does have an expandable box with a script in the Advanced only lists the commands and connect to external PowerShell help.  
+
+Select the level of instruction @lab.DropDownList(level)[None,Guided,Advanced]
+
+Remember all scripts should generally follow the structure presented by the instructor which was:
+
+```
+$result = $false
+Additional setup variables (for example storing a folder name)
+if (the test) {
+      Correct action which will at least be $result=$true
+      } 
+      Else {
+      Failed action which will at least be $result=$false
+      }
+$result
+```
+===
+
+:::sectionName(level=Guided)
+
+#Task 1 - Create a folder
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **New Folder** activity to enable testing of the of the folder being created.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the **Test-Path** command in the IF statement
+
+>[!Hint]<Details>
+><summary> Expand for an example script:</summary>
+>```
+>$result = $false
+>$folder = 'C:\Data'
+>
+>if (Test-Path -Path $Folder) {
+>      $result = $true
+>}
+>else {
+>     $result = $false
+>}
+>
+>$result
+>```
+></details>
+
+
+
+#Task 2 - Copy the Sales Report
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **Created Working Data File** activity to enable testing of the of the folder being created.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the **Test-Path** PowerShell command in the IF statement, this will be similar to the previous one.
+
+>[!Hint]<Details>
+      ><summary> Expand for an example script:</summary>
+>```
+>$result = $false
+>$File = 'C:\Data\SampleSalesData.xlsx'
+>
+>if (Test-Path -Path $File) {
+>      $result = $true
+>}
+>else {
+>     $result = $false
+>}
+>
+>$result
+>```
+></details>
+
+:::
+
+:::sectionName(level=Advanced)
+
+#Task 1 - Create a folder
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **New Folder** activity to enable testing of the of the folder being created.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the **Test-Path** Powershell command in the IF statement, this will be similar to the previous one.
+
+>[!Hint]<Details>
+      ><summary> Online PowerShell assistance:</summary>
+>[PowerShell IF-Else](https://adamtheautomator.com/powershell-if-else/ "PowerShell IF-Else")    
+>[PowerShell Test-Path](https://adamtheautomator.com/powershell-test-path/ "PowerShell Test-Path")
+></details>
+
+
+#Task 2 - Copy the Sales Report
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **Created Working Data File** activity to enable testing of the of the folder being created.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the **Test-Path** PowerShell command in the IF statement, this will be similar to the previous one.
+
+>[!Hint]<Details>
+      ><summary> Online PowerShell assistance:</summary>
+>[PowerShell IF-Else](https://adamtheautomator.com/powershell-if-else/ "PowerShell IF-Else")    
+>[PowerShell Test-Path](https://adamtheautomator.com/powershell-test-path/ "PowerShell Test-Path")
+></details>
+
+:::
+
+===
+
+#Task 3 - Review the Sales Report
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Create two new Question activities to create the questions as presented below, make sure you insert the @lab tokens (Save and Insert) in the correct page of the instructions.
+- [] Make sure the Questions have a score value of 10
+- [] Ensure you add an Outcome to each question to set a variable either to **Correct** or **Incorrect** depending of they get the answer correct or not.  For question 1 make the variable name **Q1** and **Q2** for question 2.
+
+!IMAGE[of2pxgop.jpg](of2pxgop.jpg)
+
+===
+
+#Task 4 - Unit Price Total
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **Unit Sum F46** activity to enable testing of the completed task in Excel.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the PowerShell script below but the file location and name will need to be modified.
+
+>[!Hint]<details>
+<summary>Script, expand to copy</summary>
+>```
+># Find values from Excel spreadsheet
+>$file = "C:\LabFiles\SampleSalesData.xlsx"
+>$excel = New-Object -ComObject Excel.Application
+>$workbook = $excel.Workbooks.Open($file)
+>$worksheet = $workbook.Sheets.Item(1)
+>$sum = $worksheet.Range('F46').Text
+>$formula = $worksheet.Range('F46').Formula
+>
+># Get sum from worksheet cells and close workbook
+>$v=0
+>$range = $worksheet.Range("F4:F45")
+>$range = $range.Formula
+>$range | foreach {$v +=$_}
+>$workbook.Close()
+>$excel.Quit()
+>
+># Evaluate
+>function scoredItem
+>{
+>	if ($formula -notlike '=*')
+>	{
+>		$evidence += "No formula found.`nPlease make sure you saved your work.`nThe formula must be located in cell F46`n"
+>	}
+>	elseif ($sum -ne $v)
+>	{
+>		[Int]$sum1 = $sum
+>		$sum2 = $sum1.ToString('N0')
+>		$v1 = $v.ToString('N0')
+>		$evidence += "The formula found is incorrect. The formula returned a total of $sum2 units but we're expecting $v1 units`n"
+>	}
+>	if ($evidence.Length -gt 0)
+>	{
+>		throw $evidence
+>	}
+>}
+>
+>function evaluate
+>{
+>	$result = $true
+>	$evidence = @()
+>	
+>	try
+>	{
+>		scoredItem
+>	}
+>	catch
+>	{
+>		$result = $false
+>		$evidence += $_.Exception.Message
+>	}
+>	
+>	if ($sum -eq $v)
+>	{
+>		[Int]$sum1 = $sum
+>		$sum2 = $sum1.ToString('N0')
+>		$v1 = '{0:N0}' -f $v
+>		$evidence = "Correct sum!`nWe've found a formula that calculates the total amount of units and the sum of $sum2 units matches our calculation of $v1 units"
+>	}
+>	
+>	$evidence
+>	$result
+>}
+>
+>evaluate
+>
+>```
+></details>
+
+===
+
+#Task 5 - Average Unit Costs
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **Average Unit Cost G46** activity to enable testing of the completed task in Excel.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the PowerShell script below but the file location and name will need to be modified.
+
+>[!Hint]<details>
+<summary>Script, expand to copy</summary>
+>```
+># Find values from Excel spreadsheet
+>$file = "C:\LabFiles\SampleSalesData.xlsx"
+>$excel = New-Object -ComObject Excel.Application
+>$workbook = $excel.Workbooks.Open($file)
+>$worksheet = $workbook.Sheets.Item(1)
+>$average = $worksheet.Range('G46').Text
+>$average = $average.Replace(' ','')
+>$formula = $worksheet.Range('G46').Formula
+>
+># Get sum from worksheet cells and close workbook
+>$avg=0
+>$range = $worksheet.Range("G4:G45")
+>$range = $range.Formula
+>$range | foreach {$avg +=$_}
+>$workbook.Close()
+>$excel.Quit()
+>$avg = $avg/$range.count
+>$avg = '$' + [math]::Round($avg,2)
+>
+># Evaluate
+>function scoredItem
+>{
+>	if ($formula -notlike '=*')
+>	{
+>		$evidence += "No formula found`n"
+>	}
+>	elseif ($average -ne $avg)
+>	{
+>		$evidence += "The formula found is incorrect.`nThe formula returned an average value of $average but we're expecting an avaerage of $avg`n"
+>	}
+>	if ($evidence.Length -gt 0)
+>	{
+>		throw $evidence
+>	}
+>}
+>
+>function evaluate
+>{
+>	$result = $true
+>	$evidence = @()
+>	
+>	try
+>	{
+>		scoredItem
+>	}
+>	catch
+>	{
+>		$result = $false
+>		$evidence += $_.Exception.Message
+>	}
+>	
+>	if ($average -eq $avg)
+>	{
+>		$evidence = "Correct!`nWe've found a formula that averages unit costs and the average value $average equals our calculation of $avg"
+>	}
+>	
+>	$evidence
+>	$result
+>}
+>
+>evaluate
+>
+>```
+></details>
+
+===
+
+#Task 6 - Create a Grand Totals formula
+
+- [] Review the instructions presented to the test taker so you know the task.
+- [] Edit the **Check Total Cost H46** activity to enable testing of the completed task in Excel.  Make sure any place holder text is removed before starting.
+- [] To complete this task you will need to use the PowerShell script below but the file location and name will need to be modified.
+
+>[!Hint]<details>
+<summary>Script, exapnd to copy</summary>
+>```
+># Find values from Excel spreadsheet
+>$file = "C:\LabFiles\SampleSalesData.xlsx"
+>$excel = New-Object -ComObject Excel.Application
+>$workbook = $excel.Workbooks.Open($file)
+>$worksheet = $workbook.Sheets.Item(1)
+>$sum = $worksheet.Range('H46').Text
+>$sum = $sum.Replace(' ','')
+>$formula = $worksheet.Range('H46').Formula
+>
+># Get sum from worksheet cells and close workbook
+>$v=0
+>$range = $worksheet.Range("H4:H45")
+>$range = $range.Formula
+>$range | foreach {$v +=$_}
+>$v = '$' + '{0:N}' -f $v
+>$workbook.Close()
+>$excel.Quit()
+>
+># Evaluate
+>function scoredItem
+>{
+>	if ($formula -notlike '=*')
+>	{
+>		$evidence += "No formula found`n"
+>	}
+>	elseif ($sum -ne $v)
+>	{
+>		$evidence += "The formula found is incorrect. The formula returned a total cost of $sum but we're expecting $v`n"
+>	}
+>	if ($evidence.Length -gt 0)
+>	{
+>		throw $evidence
+>	}
+>}
+>
+>function evaluate
+>{
+>	$result = $true
+>	$evidence = @()
+>	
+>	try
+>	{
+>		scoredItem
+>	}
+>	catch
+>	{
+>		$result = $false
+>		$evidence += $_.Exception.Message
+>	}
+>	
+>	if ($sum -eq $v)
+>	{
+>		$evidence = "Correct total cost!`nWe've found a formula that calculates the total cost and the total cost of $sum matches our calculation of $v"
+>	}
+>	
+>	$evidence
+>	$result
+>}
+>
+>evaluate
+>
+>```
+></details>
+
+===
+
+#Task 7 - Add gamification by adding a Leader Board
+
+##Scenario
+Whereas the activities are scored and maintained within the Skillable system for when used within a class enviroment it has been decided to enbale this lab to use a Gamificaton technique to add a Leaderboard that during and instructor lead class would enable everyone to see how they did compared to everyone else.
+
+The Gamieifcation will use a Leader Board system called KeepScore.  This will require updates to be made to each automated actvivity within the correct result section of the script.  
+
+###Tasks
+
+- [] Create a new variable under the @Lab Section on the menu bar called **APIKey** set this to the value **MyKey**.  This is where the API Key would actually go once the Lab is complete.
+
+---
+
+- Paste the code below into the correct results section of the following Activities:
+    - [] New Folder Test
+    - [] working Data File created
+
+!INSTRUCTIONS[][gameification]
+
+---
+
+- To add the Learder board updates for the MCQ's you will use the Outcome Variables that were definded when the MCQ's were created.  The variables were Q1 and Q2.
+- [] Edit the **MCQ Update Leader Board** activty script
+- [] Add two scripts one for each question.  The script would use the basic script approach as discussed with the correct section also including the content to update the leader board.
+
+!INSTRUCTIONS[][gameification]
+
+
+>[!Hint]<Details>
+><summary> Expand for an example script:</summary>
+>```
+>$result = $false
+>
+>if (@lab.Variable(replacement)Variable(Q1) -eq 'Correct') {    
+>    $result = $true
+>    ##Leaderboard Script here
+>    }
+>
+>$Result
+>```
+></Details>
+
+---
+
+- Paste this code below into the section that defines the $evidence variable which states the activity is correct.  Add to the following Activities:
+    - [] Unit Sum F46
+    - [] Average Unit Cost G46
+    - [] Check Total Cost H46
+
+IMAGE[Example of the $evidence variable](2buxlnpi.jpg)
+
+!INSTRUCTIONS[][gameification]
+
+@lab.Activity(Question3)
+
+---
+===
+
+#Lets have some Gamification FUN!!
+
+Click the link below.  Launch the lab and complete the challenge.  Watch the Leader board!!
+
+[Let the challenge begin!!](https://labondemand.com/LabProfile/109566)
+
+
+>[gameification]:
+>
+>[!HINT]<details>
+><summary>Gamification Script</summary>
+>```
+>$baseURL = 'https://keepthescore.co/api/@lab.Variable(replacement)Variable(apikey)/add_single_score'
+>## Powershell setup the API Call.
+>$Body = @{
+>    "player_name" = '@lab.Variable(replacement)User.FirstName@lab.Variable(replacement)User.LastName'
+>    "score" = 10
+>}
+>
+>$JsonBody = $Body | ConvertTo-Json
+>
+>$apiCall = @{
+>        Method = "Post"
+>        Uri =  "$($baseURL)"
+>        ContentType = "application/json"
+>        Body = $JsonBody
+>    }
+>## This is the actual API Call to get the class as it is currently.
+>$apiResponse = Invoke-RestMethod @apiCall
+>
+>if ($apiResponse.message -eq "Success" ) {
+>    $LeaderboardStatus = 'Leaderboard update success'
+>    }
+>    else {
+>    $LeaderboardStatus = 'Leaderboard update failed'
+>    }
+>```
+></details>
+

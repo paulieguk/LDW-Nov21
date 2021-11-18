@@ -1,4 +1,4 @@
-#Skillable
+Skillable_reversed.png
 
 ## Lab Developer Workshop - Nov21
 

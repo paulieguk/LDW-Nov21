@@ -1,4 +1,4 @@
-Skillable_reversed.png
+![Skillable-Logo-color](https://user-images.githubusercontent.com/18261777/142505445-6c9a025b-5349-4dc3-b42a-8734b9953ad5.jpg)
 
 ## Lab Developer Workshop - Nov21
 
